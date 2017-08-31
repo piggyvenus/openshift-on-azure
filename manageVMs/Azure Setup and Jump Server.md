@@ -212,7 +212,8 @@ azure vm create --resource-group $resourceGroupName \
     --image-urn RHEL \
     --storage-account-name $storageAccountName \
     --admin-username $adminUserName \
-    --ssh-publickey-file ~/.ssh/id_rsa.pub
+    --ssh-publickey-file ~/.ssh/id_rsa.pub \
+    --disable-boot-diagnostics
 
 ```
 
