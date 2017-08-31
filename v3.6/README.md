@@ -49,10 +49,13 @@ We will use master as our jump host to install OpenShift using Ansible.
 	Now you should be able to ssh from master host to the other (node) hosts.
 
 * Install git
-```yum install git -y ```
+```
+sudo bash
+yum install git -y 
+```
 
 
-* `git clone` the repository (https://github.com/VeerMuchandi/openshift-on-azure) onto the master host. For now using context-dir v3.3. You should now get the required ansible playbooks to prep the hosts
+* `git clone` the repository (https://github.com/piggyvenus/openshift-on-azure) onto the master host. For now using context-dir v3.3. You should now get the required ansible playbooks to prep the hosts
 
 ### Prepare the Hosts
 
