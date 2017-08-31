@@ -55,7 +55,7 @@ yum install git -y
 ```
 
 
-* `git clone` the repository (https://github.com/piggyvenus/openshift-on-azure) onto the master host. For now using context-dir v3.3. You should now get the required ansible playbooks to prep the hosts
+* `git clone` the repository (https://github.com/piggyvenus/openshift-on-azure) onto the master host. For now using context-dir v3.6. You should now get the required ansible playbooks to prep the hosts
 
 ### Prepare the Hosts
 
