@@ -112,10 +112,10 @@ Get a list of public IP addresses by running this command. You will need these v
 azure vm list-ip-address --resource-group $resourceGroupName 
 ```
 
-Change to v3.5 folder as you have a sample hosts file and ansible playbooks there.
+Change to v3.6 folder as you have a sample hosts file and ansible playbooks there.
 
 ```
-cd ../v3.5
+cd ../v3.6
 ```
 
 ### Stopping your VMs
