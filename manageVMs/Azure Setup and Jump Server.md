@@ -292,11 +292,11 @@ Install git
 yum install git -y
 ```
 
-git clone the repository (https://github.com/VeerMuchandi/openshift-on-azure) onto the master host. We will be using context-dir v3.3. You should now get the required ansible playbooks to prep the hosts.
+git clone the repository (https://github.com/piggyvenus/openshift-on-azure) onto the master host. We will be using context-dir v3.3. You should now get the required ansible playbooks to prep the hosts.
 
 ```
-git clone https://github.com/VeerMuchandi/openshift-on-azure
-cd openshift-on-azure/createVMs
+git clone https://github.com/piggyvenus/openshift-on-azure
+cd openshift-on-azure/manageVMs
 ```
 
 Now we are ready to spin up VMs for the OpenShift cluster.
