@@ -234,12 +234,12 @@ sudo bash
 Run the following commands to install Azure CLI on the jump server. These will install NPM and then use that to install azure-cli.
 
 ```
-# yum install -y gcc-c++ make
-# curl -sL https://rpm.nodesource.com/setup_6.x | sudo -E bash -
-# yum install nodejs
-# node -v
-# npm -v  
-# npm install -g azure-cli
+yum install -y gcc-c++ make
+curl -sL https://rpm.nodesource.com/setup_6.x | sudo -E bash -
+yum install nodejs -y 
+node -v
+npm -v  
+npm install -g azure-cli
 ```
 
 Verify by running
