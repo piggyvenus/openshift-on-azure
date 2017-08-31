@@ -57,6 +57,11 @@ yum install git -y
 
 * `git clone` the repository (https://github.com/piggyvenus/openshift-on-azure) onto the master host. For now using context-dir v3.6. You should now get the required ansible playbooks to prep the hosts
 
+```
+git clone https://github.com/piggyvenus/openshift-on-azure
+cd openshift-on-azure/v3.6
+```
+
 ### Prepare the Hosts
 
 * Update the `hosts.openshiftprep` file with the internal ip addresses of all the hosts (master and the node hosts). In my case these were `10.0.0.5, 10.0.0.6 10.0.0.7, 10.0.0.8, 10.0.0.9 and 10.0.0.10`
