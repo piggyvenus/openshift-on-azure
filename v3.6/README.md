@@ -82,6 +82,16 @@ Edit the hosts.storage file to include the master's hostname/ip and run the play
 ansible-playbook -i hosts.storage configure-storage.yml 
 ```
 
+### Update /etc/hosts on all nodes
+Example
+```
+10.0.0.5 pocmaster
+10.0.0.6 pocinode1
+10.0.0.7 pocnode1
+```
+### Update /etc/sysconfig/network-script/ifcfg-eth0
+PEERDNS=no
+
 ### Add DNS entries
 
 If you have an external DNS server, make the 
