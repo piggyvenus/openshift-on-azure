@@ -1,6 +1,6 @@
 ---
 - hosts: nodes
-  remote_user: veer
+  remote_user: ocpadmin
   become: True
   become_method: sudo
   vars:
@@ -38,7 +38,7 @@
     with_items: '{{rhel_pool_id}}'
 
   - name: Enable only required repositories with Subscription Manager
-    command: subscription-manager repos --disable="*" --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-ose-3.5-rpms" --enable="rhel-7-fast-datapath-rpms"
+    command: subscription-manager repos --disable="*" --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-ose-3.6-rpms" --enable="rhel-7-fast-datapath-rpms"
 
   - name: Run yum update
     yum: name=* state=latest
@@ -51,6 +51,9 @@
   - yum: name=iptables-services state=latest
   - yum: name=bridge-utils state=latest
   - yum: name=bash-completion state=latest
+  - yum: name=kexec-tools state=latest
+  - yum: name=sos state=latest
+  - yum: name=psacct state=latest
   - yum: name=atomic-openshift-utils state=latest
   - yum: name=atomic-openshift-excluder state=latest
   - yum: name=atomic-openshift-docker-excluder state=latest
@@ -60,10 +63,10 @@
     command: atomic-openshift-excluder unexclude 
 
   - name: Install Docker
-    yum: name=docker state=installed update_cache=yes
+    yum: name=docker-1.12.6 state=installed update_cache=yes
     register: dockerInstalled
-    notify:
-    - Start Docker
+  #  notify:
+  #  - Start Docker
 
   - meta: flush_handlers
 
@@ -84,10 +87,8 @@
       content: |
         DEVS={{ docker_storage_mount}}
         VG=docker-vg
+        DATA_SIZE=90%FREE
     register: dockerStorageConfigFileCreated
-    notify:
-    - Stop Docker
-    - Clean Docker Data
 
   - meta: flush_handlers
 
@@ -99,20 +100,9 @@
     when: dockerpoolLVS.stdout != "docker-pool" and dockerStorageConfigFileCreated|success
     command: docker-storage-setup 
     register: dockerStorageSetupComplete 
-    notify: 
-    - Stop Docker
-    - Clean Docker Data
-    - Start Docker
 
- 
-  - meta: flush_handlers
-
-  handlers:
-  - name: Start Docker
-    service: name=docker state=started enabled=yes
-  
-  - name: Stop Docker
-    service: name=docker state=stopped 
-  
   - name: Clean Docker Data         
     command: rm -rf /var/lib/docker/*
+
+  - name: Docker Start...
+    command: systemctl enable docker; systemctl start docker; systemctl status docker;
