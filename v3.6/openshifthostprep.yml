@@ -104,5 +104,10 @@
   - name: Clean Docker Data         
     command: rm -rf /var/lib/docker/*
 
-  - name: Docker Start...
-    command: systemctl enable docker; systemctl start docker; systemctl status docker;
+  - meta: flush_handlers
+  - name: Docker enable 
+    command: systemctl enable docker
+  - name: Docker start 
+    command: systemctl start docker
+  - name: Docker status 
+    command: systemctl status docker
