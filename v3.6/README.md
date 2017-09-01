@@ -115,7 +115,9 @@ Edit /etc/ansible/hosts file
 * Deploys redundant registry and router 
 
 ```
-# Create an OSEv3 group that contains the masters and nodes groups
+# Create an OSEv3 group that contains the master, nodes, etcd, and lb groups.
+# The lb group lets Ansible configure HAProxy as the load balancing solution.
+# Comment lb out if your load balancer is pre-configured.
 [OSEv3:children]
 masters
 nodes
@@ -123,54 +125,96 @@ nfs
 
 # Set variables common for all OSEv3 hosts
 [OSEv3:vars]
-# SSH user, this user should allow ssh based auth without requiring a password
-ansible_ssh_user=veer
-
-# If ansible_ssh_user is not root, ansible_sudo must be set to true
-ansible_sudo=true
+ansible_ssh_user=ocpadmin
+deployment_type=openshift-enterprise
 ansible_become=yes
 
-# To deploy origin, change deployment_type to origin
-deployment_type=openshift-enterprise
-
-openshift_master_default_subdomain=apps.devday.ocpcloud.com
-osm_default_node_selector="region=primary"
-openshift_hosted_router_selector='region=infra,zone=router'
-openshift_registry_selector='region=infra'
 openshift_master_api_port=443
 openshift_master_console_port=443
+openshift_clock_enabled=true
+openshift_master_default_subdomain=apps.kaiserpoc.openshift.online
+# Disabling for smaller instances used for Demo purposes. Use instances with minimum disk and memory sizes required by OpenShift
+openshift_disable_check=disk_availability,memory_availability
+openshift_hosted_router_selector='region=infra,zone=router'
+openshift_registry_selector='region=infra,zone=router'
 
-openshift_hosted_registry_storage_nfs_directory=/exports
+# Uncomment the following to enable htpasswd authentication; defaults to
+# DenyAllPasswordIdentityProvider.
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
 
+#172.30.0.0/16 default
+#openshift_portal_net=172.30.0.0/16
+#default 10.1.0.0/16
+#osm_cluster_network_cidr=172.29.0.0/16
 
-# Metrics
+openshift_install_examples=true
+
+#Metrics stuff
 openshift_hosted_metrics_deploy=true
+# Override metricsPublicURL in the master config for cluster metrics
+# Defaults to https://hawkular-metrics.{{openshift_master_default_subdomain}}/hawkular/metrics
+# Currently, you may only alter the hostname portion of the url, alterting the
+# `/hawkular/metrics` path will break installation of metrics.
+openshift_hosted_metrics_public_url=https://hawkular-metrics.apps.kaiserpoc.openshift.online/hawkular/metrics
+
+
+# An NFS volume will be created with path "nfs_directory/volume_name"
+# on the host within the [nfs] host group.  For example, the volume
+# path using these options would be "/exports/metrics"
 openshift_hosted_metrics_storage_kind=nfs
 openshift_hosted_metrics_storage_access_modes=['ReadWriteOnce']
 openshift_hosted_metrics_storage_nfs_directory=/exports
 openshift_hosted_metrics_storage_nfs_options='*(rw,root_squash)'
 openshift_hosted_metrics_storage_volume_name=metrics
 openshift_hosted_metrics_storage_volume_size=10Gi
+openshift_hosted_metrics_storage_labels={'storage': 'metrics'}
+
+# Registry Storage Options
+# NFS Host Group
+# An NFS volume will be created with path "nfs_directory/volume_name"
+# on the host within the [nfs] host group.  For example, the volume
+# path using these options would be "/exports/registry"
+openshift_hosted_registry_storage_kind=nfs
+openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
+openshift_hosted_registry_storage_nfs_directory=/exports
+openshift_hosted_registry_storage_nfs_options='*(rw,root_squash)'
+openshift_hosted_registry_storage_volume_name=registry
+openshift_hosted_registry_storage_volume_size=20Gi
 
 
-# enable htpasswd authentication
-openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/openshift/openshift-passwd'}]
+openshift_hosted_logging_deploy=true
+# Logging storage config
+# Option A - NFS Host Group
+# An NFS volume will be created with path "nfs_directory/volume_name"
+# on the host within the [nfs] host group.  For example, the volume
+# path using these options would be "/exports/logging"
+openshift_hosted_logging_storage_kind=nfs
+openshift_hosted_logging_storage_access_modes=['ReadWriteOnce']
+openshift_hosted_logging_storage_nfs_directory=/exports
+openshift_hosted_logging_storage_nfs_options='*(rw,root_squash)'
+openshift_hosted_logging_storage_volume_name=logging
+openshift_hosted_logging_storage_volume_size=20Gi
+openshift_hosted_logging_storage_labels={'storage': 'logging'}
+
+openshift_master_logging_public_url=https://kibana.apps.kaiserpoc.openshift.online
+# Configure the number of elastic search nodes, unless you're using dynamic provisioning
+# this value must be 1
+openshift_hosted_logging_elasticsearch_cluster_size=1
+openshift_hosted_logging_hostname=kibana.apps.kaiserpoc.openshift.online
 
 # host group for masters
 [masters]
 10.0.0.5
 
-[nfs]
-10.0.0.5
-
 # host group for nodes, includes region info
 [nodes]
-10.0.0.5 openshift_node_labels="{'region': 'infra', 'zone': 'default'}"  openshift_scheduleable=false openshift_public_hostname=master.devday.ocpcloud.com
+10.0.0.5 openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_schedulable=True openshift_public_hostname=master.kaiserpoc.openshift.online
 10.0.0.6 openshift_node_labels="{'region': 'infra', 'zone': 'router'}" openshift_schedulable=True
-10.0.0.7 openshift_node_labels="{'region': 'infra', 'zone': 'router'}" openshift_schedulable=True
-10.0.0.8 openshift_node_labels="{'region': 'primary', 'zone': 'east'}" 
-10.0.0.9 openshift_node_labels="{'region': 'primary', 'zone': 'west'}" 
-10.0.0.10 openshift_node_labels="{'region': 'primary', 'zone': 'east'}"
+10.0.0.7 openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
+10.0.0.8 openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
+
+[nfs]
+10.0.0.5
 
 ```
 
@@ -192,7 +236,7 @@ htpasswd /etc/openshift/openshift-passwd <<uname>>
 ``` 
 
 ### Post Installation
-In OCP 3.3 there are certain tech preview features. Pipelines is one of them and is not enabled by default. Following steps will enable the same. I believe this will be temporary step until the tech preview becomes supported.
+In OCP 3.6 there are certain tech preview features. Pipelines is one of them and is not enabled by default. Following steps will enable the same. I believe this will be temporary step until the tech preview becomes supported.
 
 * Ensure master host is listed in `hosts.master`
 * Run the post-install script that will enable pipelines feature
